@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<device>
+	<deviceid>100001</deviceid>
+	<devicename>sz</devicename>
+	<comid>com0000</comid>
+	<topics2c>faceTopic0/com0000/s_c</topics2c>
+	<topicc2s>faceTopic0/com0000/c_s</topicc2s>
+	<metric>face_com0000_device0001</metric>
+</device>
