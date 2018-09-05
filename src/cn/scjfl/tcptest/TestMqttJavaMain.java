@@ -1,6 +1,5 @@
 package cn.scjfl.tcptest;
 
-
 import java.text.SimpleDateFormat;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -53,7 +52,9 @@ class TestMqttJavaMain {
             connOpts.setUserName(username);
             connOpts.setPassword(password.toCharArray());
             connOpts.setCleanSession(true);
-            connOpts.setAutomaticReconnect(true);
+            //connOpts.setAutomaticReconnect(true);
+            //connOpts.setConnectionTimeout(10);
+            connOpts.setKeepAliveInterval(20);
             System.out.println("clean session?: "+connOpts.isCleanSession());
             System.out.println("Connecting to broker: " + broker);
             mqttClient = new MqttClient(broker, clientId);
@@ -90,28 +91,34 @@ class TestMqttJavaMain {
     
    public synchronized void reconnectIfNecessary() { 
 	   if(mqttClient==null|| !mqttClient.isConnected()) {
+		   System.out.println("reconnectIfNecessary");
 		   connect();
 	   }
    }
    
    private void connect() {
-       new Thread(new Runnable() {
-
-           @Override
-           public void run() {
-               try {
-                   mqttClient.connect(connOpts);
-                   mqttClient.subscribe(subtopic, new MqttReceiver());
-               }
-               catch (MqttException e) {
-				System.out.println("mqtt exception");
-			}
-               catch (Exception e) {
-                   e.printStackTrace();
-               }
-           }
-       }).start();
-   }
+		try {
+		   if(!mqttClient.isConnected()) {
+	           mqttClient.connect(connOpts);
+	           System.out.println("connected");
+	           mqttClient.subscribe(subtopic, new MqttReceiver());
+	       }else {
+	    	   mqttClient.disconnect();
+	    	   mqttClient.connect(connOpts);
+	    	   System.out.println("reconnected");
+	       }
+	   }
+	   catch (MqttException e) {
+		   	System.out.println("mqtt exception");
+		   	System.out.println("caouse: "+e.getCause());
+		   	System.out.println("message: "+e.getMessage());
+		   	System.out.println("code: "+e.getReasonCode());
+		   	e.printStackTrace();
+		}
+	   catch (Exception e) {
+	           e.printStackTrace();
+	       }
+}
    
 
     public void close() {

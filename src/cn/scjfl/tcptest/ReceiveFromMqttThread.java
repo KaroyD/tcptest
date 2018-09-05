@@ -2,6 +2,7 @@ package cn.scjfl.tcptest;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import cn.scjfl.jsonbean.DeviceBean;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 
@@ -28,7 +29,10 @@ public class ReceiveFromMqttThread implements Runnable {
 						String comid=(String)jsonObject.get("comid");
 						String deviceid=(String)jsonObject.get("deviceid");
 						String cmd=(String)jsonObject.get("cmd");
-						if(comid.equals(bean.getComid())&&cmd.equals("2001")||comid.equals(bean.getComid())&&deviceid.equals(bean.getDeviceid())) {
+						Object device=jsonObject.get("deviceids");
+						JSONArray jArray=JSONArray.fromObject(device);
+						if(comid.equals(bean.getComid())&&cmd.equals("2001")&&jArray.contains(bean.getDeviceid())
+								||comid.equals(bean.getComid())&&deviceid.equals(bean.getDeviceid())) {
 							jsonObject.remove("metric");
 							jsonObject.remove("value");
 							jsonObject.remove("timestamp");
