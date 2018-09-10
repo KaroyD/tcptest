@@ -41,18 +41,20 @@ public class ReceiveFromMqttThread implements Runnable {
 								JSONObject data=(JSONObject) jsonObject.get("data");
 								String ids=data.getString("id");
 								String []idarray=ids.split(",");
+								System.out.println(idarray.toString());
 								for(int i=0;i<idarray.length;i++) {
 									data.remove("id");
 									jsonObject.remove("data");
 									data.put("id", idarray[i]);
 									jsonObject.put("data", data);
 									receivefromCloudbq.offer(jsonObject.toString());
+									//bean.messageflag=true;
 								}
 							}
 							else {
 								receivefromCloudbq.offer(jsonObject.toString());
+								//bean.messageflag=true;
 							}
-							bean.messageflag=true;
 						}
 					}
 					Thread.sleep(1000);
