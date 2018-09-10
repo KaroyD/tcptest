@@ -2,6 +2,7 @@ package cn.scjfl.tcptest;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import cn.scjfl.jsonbean.DeviceBean;
+import cn.scjfl.log.Log;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -29,15 +30,28 @@ public class ReceiveFromMqttThread implements Runnable {
 						String comid=(String)jsonObject.get("comid");
 						String deviceid=(String)jsonObject.get("deviceid");
 						String cmd=(String)jsonObject.get("cmd");
-						Object device=jsonObject.get("deviceids");
-						JSONArray jArray=JSONArray.fromObject(device);
-						if(comid.equals(bean.getComid())&&cmd.equals("2001")&&jArray.contains(bean.getDeviceid())
+						String deviceids=(String)jsonObject.get("deviceids");
+						if(comid.equals(bean.getComid())&&(cmd.equals("2001")||cmd.equals("2002"))&&deviceids.contains(bean.getDeviceid())
 								||comid.equals(bean.getComid())&&deviceid.equals(bean.getDeviceid())) {
 							jsonObject.remove("metric");
 							jsonObject.remove("value");
 							jsonObject.remove("timestamp");
 							jsonObject.remove("comid");
-							receivefromCloudbq.offer(jsonObject.toString());
+							if(cmd.equals("2002")) {
+								JSONObject data=(JSONObject) jsonObject.get("data");
+								String ids=data.getString("id");
+								String []idarray=ids.split(",");
+								for(int i=0;i<idarray.length;i++) {
+									data.remove("id");
+									jsonObject.remove("data");
+									data.put("id", idarray[i]);
+									jsonObject.put("data", data);
+									receivefromCloudbq.offer(jsonObject.toString());
+								}
+							}
+							else {
+								receivefromCloudbq.offer(jsonObject.toString());
+							}
 							bean.messageflag=true;
 						}
 					}
@@ -46,11 +60,14 @@ public class ReceiveFromMqttThread implements Runnable {
 			}
 			catch (InterruptedException e) {
 				System.out.println("fail to stop the ReceiveFromMqtt thread");
+				Log.log.error("fail to stop the ReceiveFromMqtt thread: "+e);
 			}
 			finally {
 				System.out.println("receivefrommqtt die");
+				Log.log.error("receivefrommqtt die");
 				mqttObj.close();
 				bean.stopflag=true;
+				Service.isBreak=true;
 			}
 	}
 	

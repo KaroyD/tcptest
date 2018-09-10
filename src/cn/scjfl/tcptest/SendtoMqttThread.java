@@ -4,6 +4,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import cn.scjfl.jsonbean.DeviceBean;
+import cn.scjfl.log.Log;
 
 
 
@@ -32,13 +33,17 @@ public class SendtoMqttThread implements Runnable {
 		} 
 		catch (InterruptedException e) {
 			System.out.println("fail to stop the SendtoMqtt thread");
+			Log.log.error("fail to stop the SendtoMqtt thread :"+e);
 		} 
 		catch (MqttException e) {
 			System.out.println("Mqtt exception in sendtomqtt");
+			Log.log.error("Mqtt exception in sendtomqtt :"+e);
 		}
 		finally {
 			bean.stopflag=true;
+			Service.isBreak=true;
 			System.out.println("sendtomqtt die");
+			Log.log.error("sendtomqtt die");
 		}
 	}
 	

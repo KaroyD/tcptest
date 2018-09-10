@@ -1,5 +1,6 @@
 package cn.scjfl.tcptest;
 
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -12,13 +13,17 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import cn.scjfl.jsonbean.DeviceBean;
+import cn.scjfl.log.Log;
+
 class MqttReceiver implements IMqttMessageListener {
 	static ConcurrentLinkedQueue<String> bq=new ConcurrentLinkedQueue<>();
 	private String str;
 	private boolean firstconnection=true;
     @Override
-    public void messageArrived(String topic, MqttMessage message) {
-    	str=message.toString();
+    public void messageArrived(String topic, MqttMessage message) throws UnsupportedEncodingException {
+    	//str=message.toString();
+    	str=new String(message.getPayload(), "utf-8");
     	if(str.contains("\"cmd\":\"1000\"")) {
     		bq.offer(str);
     		System.out.println("login successfully");
@@ -43,8 +48,10 @@ class TestMqttJavaMain {
     public MqttConnectOptions connOpts = null;
     public MqttClient mqttClient=null;
     private String subtopic;
-    public TestMqttJavaMain(String subtopic) {
+    private DeviceBean bean;
+    public TestMqttJavaMain(String subtopic,DeviceBean bean) {
 		this.subtopic=subtopic;
+		this.bean=bean;
 	}
     public void init() {
     	try {
@@ -62,30 +69,34 @@ class TestMqttJavaMain {
             mqttClient.setCallback(new MqttCallback() {
 				@Override
 				public void messageArrived(String arg0, MqttMessage arg1) throws Exception {
-					SimpleDateFormat aDate=new SimpleDateFormat("yyyy-mm-dd  HH:mm:ss");
+					SimpleDateFormat aDate=new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss");
 					long now=System.currentTimeMillis();
 					System.out.println("new message arrived "+aDate.format(now));
 				}		
 				@Override
 				public void deliveryComplete(IMqttDeliveryToken arg0) {
-					SimpleDateFormat aDate=new SimpleDateFormat("yyyy-mm-dd  HH:mm:ss");
+					SimpleDateFormat aDate=new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss");
 					long now=System.currentTimeMillis();
 					System.out.println("message delivery complete "+aDate.format(now));
 				}	
 				@Override
 				public void connectionLost(Throwable arg0) {
-					SimpleDateFormat aDate=new SimpleDateFormat("yyyy-mm-dd  HH:mm:ss");
+					SimpleDateFormat aDate=new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss");
 					long now=System.currentTimeMillis();
 					System.out.println("exception: "+arg0);
 					System.out.println("connection to the server is lost "+aDate.format(now));
 					System.out.println("try to reconnect");
-					reconnectIfNecessary();
+					Log.log.error("mqtt disconnec, exception: "+arg0);
+					bean.stopflag=true;
+				   	Service.isBreak=true;
+					//reconnectIfNecessary();
 				}
 			});
             connect();
         	}
         	catch (Exception e) {
 				System.out.println("fail to initialize mqtt");
+				Log.log.error("fail to initialize mqtt :"+e);
 			}
         } 
     
@@ -114,19 +125,26 @@ class TestMqttJavaMain {
 		   	System.out.println("message: "+e.getMessage());
 		   	System.out.println("code: "+e.getReasonCode());
 		   	e.printStackTrace();
+//		   	bean.stopflag=true;
+//		   	Service.isBreak=true;
+		   	Log.log.error("mqtt exception :"+e);
 		}
 	   catch (Exception e) {
-	           e.printStackTrace();
+	           Log.log.error("error in mqtt :"+e);
 	       }
+		
 }
    
 
     public void close() {
     	try {
-			mqttClient.disconnect(5000);
-			mqttClient.close();
+    		if(mqttClient.isConnected()) {
+    			mqttClient.disconnect(5000);
+    		}
+    		mqttClient.close();
 		} catch (MqttException e) {
 			System.out.println("fail to close mqttclient");
+			Log.log.error("fail to close mqttclient :"+e);
 		}
     }
 }

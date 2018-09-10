@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import cn.scjfl.jsonbean.DeviceBean;
+import cn.scjfl.log.Log;
 import net.sf.json.JSONObject;
 
 
@@ -63,6 +64,8 @@ class ServerReaderThread implements Runnable {
 //                                    System.out.println("   get flageit value "+jsonObject.get(flagIt));
                                     jsObj.put(flagIt, jsonObject.get(flagIt));
                                 }
+                                
+                                System.out.println("put in to sendtobq: "+jsObj.toString());
                                 sendtoCloudbq.offer(jsObj.toString());
                             }
                             message = "";
@@ -72,18 +75,26 @@ class ServerReaderThread implements Runnable {
                 Thread.sleep(1000);
             }
         } 
+        catch (InterruptedException e) {
+        	System.out.println("Server Reader fail to sleep");
+        	Log.log.error("Server Reader fail to sleep :"+e);
+        }
         catch (Exception e) {
         	System.out.println("Server Reader exception");
+        	Log.log.error("Server Reader exception :"+e);
         } 
         finally {
         	bean.stopflag=true;
+        	Service.isBreak=true;
             System.out.println("service reader die");
+        	Log.log.error("service reader die");
             try {
                 if (socket != null)
                     socket.close();
             } 
             catch (IOException ex) {
                 System.out.println("Failed to release resource");
+                Log.log.error("service reader die");
             }
         }
     }

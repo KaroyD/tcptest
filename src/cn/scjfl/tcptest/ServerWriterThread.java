@@ -1,11 +1,11 @@
 package cn.scjfl.tcptest;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import cn.scjfl.jsonbean.DeviceBean;
+import cn.scjfl.log.Log;
 
 
 
@@ -45,32 +45,37 @@ class ServerWriterThread implements Runnable {
                     Thread.sleep(500);
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+            	System.out.println("Server Writer fail to sleep");
+            	Log.log.error("Server Writer fail to sleep :"+e);
             }
             //		catch (IOException e) {
             //			e.printStackTrace();
             //		}
         catch (IOException e) {
-            e.printStackTrace();
+        	System.out.println("Server Writer IOException");
+        	Log.log.error("Server Writer IOException :"+e);
         } finally {
         	bean.stopflag=true;
+        	Service.isBreak=true;
             System.out.println("service writer die");
+            Log.log.error("Server Writer die");
                 try {
                     if (socket != null)
                         socket.close();
                     if (os != null)
                         os.close();
-                    if (bufferkeyboard != null)
-                        bufferkeyboard.close();
+//                    if (bufferkeyboard != null)
+//                        bufferkeyboard.close();
                 } catch (IOException ex) {
                     System.out.println("Failed to release resource");
+                	Log.log.error("Server Writer fail release resource :"+ex);
                 }
             }
     }
 
     private Socket socket = null;
     private OutputStream os = null;
-    private BufferedReader bufferkeyboard = null;
+    //private BufferedReader bufferkeyboard = null;
     private DeviceBean bean=null;
     private ConcurrentLinkedQueue<String> receivefromCloudbq = null;
 
