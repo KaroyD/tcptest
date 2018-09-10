@@ -33,13 +33,12 @@ class ServerWriterThread implements Runnable {
                         bean.keepAlive = false;
                     }
                    // while ((content = receivefromCloudbq.take()) != null) {
-                     if(bean.messageflag==true) {
+                     if(!receivefromCloudbq.isEmpty()) {
                          content = receivefromCloudbq.poll();
                          System.out.println("send to terminal: " + content);
                          System.out.println("length+: " + content.length());
                          os.write(content.getBytes());
                          os.flush();
-                         bean.messageflag=false;
                      }
                    // }
                     Thread.sleep(500);
