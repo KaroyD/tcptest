@@ -15,24 +15,25 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import cn.scjfl.jsonbean.DeviceBean;
 import cn.scjfl.log.Log;
+import net.sf.json.JSONObject;
 
 class MqttReceiver implements IMqttMessageListener {
 	static ConcurrentLinkedQueue<String> bq=new ConcurrentLinkedQueue<>();
 	private String str;
-	private boolean firstconnection=true;
+	private long gap=180*1000;
     @Override
     public void messageArrived(String topic, MqttMessage message) throws UnsupportedEncodingException {
     	//str=message.toString();
     	str=new String(message.getPayload(), "utf-8");
-    	if(str.contains("\"cmd\":\"1000\"")) {
-    		bq.offer(str);
-    		System.out.println("login successfully");
-    		firstconnection=false;
-    		return;
-    	}
-    	if(str.contains("{")&&str.contains("}")&&!firstconnection) {
-	        bq.offer(str);
-	        System.out.println("MqttReceiver: "+str);
+    	if(str.contains("{")&&str.contains("}")) {
+        	JSONObject jsobject=JSONObject.fromObject(str);
+        	long timestamp=jsobject.getLong("timestamp");
+        	long now=System.currentTimeMillis();
+        	System.out.println("now: "+now+" timestamp: "+timestamp+" gap: "+Math.abs(timestamp-now));
+        	if(Math.abs(timestamp-now)<gap) {
+        		bq.offer(str);
+        		System.out.println("MqttReceiver: "+str);
+        	}
     	}
     }
 

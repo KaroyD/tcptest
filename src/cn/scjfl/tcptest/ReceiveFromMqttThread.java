@@ -3,7 +3,6 @@ package cn.scjfl.tcptest;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import cn.scjfl.jsonbean.DeviceBean;
 import cn.scjfl.log.Log;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 
@@ -31,6 +30,7 @@ public class ReceiveFromMqttThread implements Runnable {
 						String deviceid=(String)jsonObject.get("deviceid");
 						String cmd=(String)jsonObject.get("cmd");
 						String deviceids=(String)jsonObject.get("deviceids");
+
 						if(comid.equals(bean.getComid())&&(cmd.equals("2001")||cmd.equals("2002"))&&deviceids.contains(bean.getDeviceid())
 								||comid.equals(bean.getComid())&&deviceid.equals(bean.getDeviceid())) {
 							jsonObject.remove("metric");
@@ -51,7 +51,7 @@ public class ReceiveFromMqttThread implements Runnable {
 									//bean.messageflag=true;
 								}
 							}
-							else {
+						else {
 								receivefromCloudbq.offer(jsonObject.toString());
 								//bean.messageflag=true;
 							}

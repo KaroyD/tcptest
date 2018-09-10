@@ -25,7 +25,14 @@ class ServerWriterThread implements Runnable {
         try {
                 while (!bean.stopflag) {
 //                    System.out.println("xintiao flase and trun :" +Service.keepAlive);
-                    if (bean.keepAlive == true) {
+                	if (bean.firstconnection==true) {
+                		content = bean.login();
+                		System.out.println("first login: "+content);
+                        os.write(content.getBytes());
+                        os.flush();
+                        bean.firstconnection=false;
+                	}
+                	if (bean.keepAlive == true) {
                         content = bean.heartbeats();
 //                        System.out.println("heartbeat");
                         os.write(content.getBytes());

@@ -39,13 +39,17 @@ class ServerReaderThread implements Runnable {
                         if (count == 0) {
                             //System.out.println(message);
                             //sendtoCloudbq.put(message);
-                            String containstr = "\"cmd\" : \"1001\"";
-                            if (message.contains(containstr)) {
+                            //String containstr = "\"cmd\" : \"1001\"";
+                        	if (message.contains("\"cmd\" : \"1000\"")){
+                        		bean.firstconnection=true;
+                        	}
+                        	else if (message.contains("\"cmd\" : \"1001\"")) {
 //                                System.out.println("xintiao jinru ");
                             	bean.keepAlive = true;
                                 message.replace(" ", "");
                                 bean.setSeq(message);
-                            } else {
+                            } 
+                        	else if(!message.contains("\"cmd\" : \"1000\"")){
                                 //分解传上来的字符串，添加三个新的头之后，放进队列
                                 JSONObject jsonObject = JSONObject.fromObject(message);
                                 JSONObject jsObj = new JSONObject();
