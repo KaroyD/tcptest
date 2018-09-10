@@ -13,7 +13,7 @@ public class DeviceBean {
     private String metric;
 	public  boolean stopflag=false;
 	public  boolean keepAlive=false;
-	public  boolean messageflag=false;
+	//public  boolean messageflag=false;
 	
 	public DeviceBean() {
 		super();
