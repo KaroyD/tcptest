@@ -14,6 +14,7 @@ public class DeviceBean {
 	public  boolean stopflag=false;
 	public  boolean keepAlive=false;
 	//public  boolean messageflag=false;
+	public boolean firstconnection;
 	
 	public DeviceBean() {
 		super();
@@ -91,7 +92,16 @@ public class DeviceBean {
         jsonS.put("deviceid",deviceid);
         return jsonS.toString();
 	}
-
+	
+	public 	String login() {
+        JSONObject jsonS=new JSONObject();
+        jsonS.put("cmd","1000");
+        jsonS.put("seq",seq);
+        jsonS.put("deviceid",deviceid);
+        jsonS.put("secretkey", "abcdefg");
+        jsonS.put("validate", "1200");
+        return jsonS.toString();
+	}
 	public String getMetric() {
 		return metric;
 	}
